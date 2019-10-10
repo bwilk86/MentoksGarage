@@ -3,6 +3,7 @@ import time as time
 import os
 import markdown
 from flask import Flask, jsonify, request, g
+from picamera import PiCamera
 #from flask_restful import Resource, Api
 
 
@@ -29,7 +30,6 @@ def index():
     with open(os.path.dirname(app.root_path) + '/venv/ReadMe.txt', 'r') as markdown_file:
         content = markdown_file.read()
         return markdown.markdown(content)
-
 
 @app.route('/api/door/', methods=['PUT', 'POST', 'GET'])
 def door_task():
@@ -58,6 +58,17 @@ def door_task():
         else:
             data = {'state': 'closed'}
             return jsonify(data)
+
+@app.route('/api/garagecamera/', methods=['GET'])
+def camera_task():
+    camera = PiCamera()
+    camera.start_preview()
+    time.sleep(2)
+    full_path = os.path.dirname(app.root_path) + '/camera/garage.jpg'
+    camera.capture(full_path)
+    camera.stop_preview()
+    data = {'path': full_path}
+    return jsonify(data)
 
 @app.route('/api/lights/', methods=['PUT', 'POST', 'GET'])
 def light_task():
