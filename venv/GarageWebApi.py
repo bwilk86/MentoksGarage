@@ -1,6 +1,6 @@
 #!flask/bin/python
 from flask import Flask, jsonify, request
-from flask_restful import Resource, Api
+from Flask_RESTful import Resource, Api
 import RPi.GPIO as GPIO
 import time as time
 import os
