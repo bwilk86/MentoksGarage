@@ -1,10 +1,10 @@
-#!flask/bin/python
-from flask import Flask, jsonify, request, g
-#from flask_restful import Resource, Api
 import RPi.GPIO as GPIO
 import time as time
 import os
 import markdown
+from flask import Flask, jsonify, request, g
+#from flask_restful import Resource, Api
+
 
 app = Flask(__name__)
 #api = Api(app)
