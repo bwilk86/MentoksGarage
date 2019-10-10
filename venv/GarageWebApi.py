@@ -4,6 +4,7 @@ from flask import Flask, jsonify, request, g
 import RPi.GPIO as GPIO
 import time as time
 import os
+import markdown
 
 app = Flask(__name__)
 #api = Api(app)
@@ -25,7 +26,10 @@ GPIO.setup(garage_unused_relay_pin,GPIO.OUT)
 
 @app.route('/')
 def index():
-    return "Hello, World!"
+    with open(os.path.dirname(app.root_path) + '/ReadMe.txt', 'r') as markdown_file:
+        content = markdown_file.read()
+        return markdown.markdown
+
 
 @app.route('/api/door/', methods=['PUT', 'POST', 'GET'])
 def door_task():
