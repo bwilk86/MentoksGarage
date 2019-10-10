@@ -32,9 +32,9 @@ def door_task():
     if(request.method == 'GET'):
         state = sensor_read(garage_door_sensor_pin)
         if (state):
-            return {'state': 'open'}
+            return {'state': 'open'}, 200
         else:
-            return {'state': 'closed'}
+            return {'state': 'closed'}, 200
     else:
         content = request.get_json()
         action = content['action']
@@ -47,9 +47,9 @@ def door_task():
             if (not state):
                 relay_momentary_button(garage_door_relay_pin)
         if (state):
-            return {'state': 'open'}
+            return {'state': 'open'}, 200
         else:
-            return {'state': 'closed'}
+            return {'state': 'closed'}, 200
 
 @app.route('/api/lights/', methods=['PUT', 'POST', 'GET'])
 def light_task():
