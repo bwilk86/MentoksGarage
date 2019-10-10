@@ -1,5 +1,6 @@
-from flask import Flask, jsonify, request
-from flask_restful import Resource, Api
+#!flask/bin/python
+from flask import Flask, jsonify, request, g
+#from flask_restful import Resource, Api
 import RPi.GPIO as GPIO
 import time as time
 import os
@@ -26,47 +27,29 @@ GPIO.setup(garage_unused_relay_pin,GPIO.OUT)
 def index():
     return "Hello, World!"
 
-class GarageDoor(Resource):
-    def get(self):
+@app.route('/api/door/', methods=['PUT', 'POST', 'GET'])
+def door_task():
+    if(request.method == 'GET'):
         state = sensor_read(garage_door_sensor_pin)
-        if(state):
-            return {'state':'open'}
+        if (state):
+            return {'state': 'open'}
         else:
-            return {'state':'closed'}
-
-    def post(self):
+            return {'state': 'closed'}
+    else:
         content = request.get_json()
         action = content['action']
         state = sensor_read(garage_door_sensor_pin)
         if (action == 'open'):
-            if(state):
+            if (state):
                 relay_momentary_button(garage_door_relay_pin)
         elif (action == 'close'):
             state = sensor_read(garage_door_sensor_pin)
-            if(not state):
+            if (not state):
                 relay_momentary_button(garage_door_relay_pin)
-        if(state):
-            return {'state':'open'}
+        if (state):
+            return {'state': 'open'}
         else:
-            return {'state':'closed'}
-
-
-@app.route('/api/door/', methods=['PUT', 'POST', 'GET'])
-def door_task():
-    if(request.method == 'GET'):
-        state = GPIO.input(garage_door_relay_pin)
-        if(state):
-            return 'TRUE'
-        else:
-            return 'FALSE'
-    else:
-        relay_momentary_button(garage_door_relay_pin)
-        time.sleep(20)
-        state = sensor_read(garage_door_sensor_pin)
-        if(state):
-            return 'TRUE'
-        else:
-            return 'FALSE'
+            return {'state': 'closed'}
 
 @app.route('/api/lights/', methods=['PUT', 'POST', 'GET'])
 def light_task():
