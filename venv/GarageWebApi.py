@@ -28,7 +28,7 @@ GPIO.setup(garage_unused_relay_pin,GPIO.OUT)
 def index():
     with open(os.path.dirname(app.root_path) + '/venv/ReadMe.txt', 'r') as markdown_file:
         content = markdown_file.read()
-        return markdown.markdown
+        return markdown.markdown(content)
 
 
 @app.route('/api/door/', methods=['PUT', 'POST', 'GET'])
