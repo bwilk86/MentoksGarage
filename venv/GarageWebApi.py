@@ -86,11 +86,10 @@ def relay_state_change(pin):
     return GPIO.input(pin)
 
 def relay_momentary_button(pin):
-    GPIO.output(pin, False)
     state = GPIO.input(pin)
-    GPIO.output(pin,not state)
+    GPIO.output(pin,False)
     time.sleep(.2)
-    GPIO.output(pin, state)
+    GPIO.output(pin, True)
 
 #api.add_resource(GarageDoor, '/api/GarageDoor')
 app.run(host='0.0.0.0', port=8090, debug=True)
