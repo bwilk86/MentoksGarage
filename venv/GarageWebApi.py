@@ -60,15 +60,19 @@ def light_task():
     if(request.method == 'GET'):
         state = GPIO.input(garage_lights_relay_pin)
         if(state):
-            return 'TRUE'
+            data = {'state':'ON'}
+            return jsonify(data)
         else:
-            return 'FALSE'
+            data = {'state': 'OFF'}
+            return jsonify(data)
     else:
         state = relay_state_change(garage_lights_relay_pin)
         if(state):
-            return 'TRUE'
+            data = {'state': 'ON'}
+            return jsonify(data)
         else:
-            return 'FALSE'
+            data = {'state': 'OFF'}
+            return jsonify(data)
 
 def sensor_read(pin):
     GPIO.output(pin, True)
