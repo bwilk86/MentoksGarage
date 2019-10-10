@@ -1,9 +1,12 @@
 #!flask/bin/python
 from flask import Flask, jsonify, request
+from flask_restful import Resource, Api
 import RPi.GPIO as GPIO
 import time as time
+import os
 
 app = Flask(__name__)
+api = Api(app)
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
@@ -23,6 +26,31 @@ GPIO.setup(garage_unused_relay_pin,GPIO.OUT)
 @app.route('/')
 def index():
     return "Hello, World!"
+
+class GarageDoor(Resource):
+    def get(self):
+        state = sensor_read(garage_door_sensor_pin)
+        if(state):
+            return {'state':'open'}
+        else:
+            return {'state':'closed'}
+
+    def post(self):
+        content = request.get_json()
+        action = content['action']
+        state = sensor_read(garage_door_sensor_pin)
+        if (action == 'open'):
+            if(state):
+                relay_momentary_button(garage_door_relay_pin)
+        elif (action == 'close'):
+            state = sensor_read(garage_door_sensor_pin)
+            if(not state):
+                relay_momentary_button(garage_door_relay_pin)
+        if(state):
+            return {'state':'open'}
+        else:
+            return {'state':'closed'}
+
 
 @app.route('/api/door/', methods=['PUT', 'POST', 'GET'])
 def door_task():
@@ -74,4 +102,5 @@ def relay_momentary_button(pin):
     time.sleep(.2)
     GPIO.output(pin, state)
 
+api.add_resource(GarageDoor, '/api/GarageDoor')
 app.run(host='0.0.0.0', port=8090, debug=True)
