@@ -13,10 +13,15 @@
         <div class="container">
             <div class="page-header text-center"><h1>Mentok's Home Automation</h1></div>
             <div class="row">
-                <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
-                    <h4>Garage</h4>
-                    <input type="button" value="Door" class="btn btn-success" onclick="ToggleGarageDoor()">
-                    <input type="button" value="Lights" class="btn btn-danger" onclick="ToggleLights()">
+                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                    <h4 class="text-center">Door</h4>
+                    <input type="button" value="Open" class="btn btn-success btn-block" onclick="GarageDoor(open)">
+                    <input type="button" value="Close" class="btn btn-danger btn-block" onclick="GarageDoor(close)">
+                </div>
+                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                    <h4 class="text-center">Lights</h4>
+                    <input type="button" value="On" class="btn btn-success btn-block" onclick="SwitchOnLights()">
+                    <input type="button" value="Off" class="btn btn-danger btn-block" onclick="SwitchOffLights()">
                 </div>
             </div>
         </div>
