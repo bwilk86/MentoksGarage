@@ -42,7 +42,7 @@ def door_task():
             data={'state':'closed'}
             return jsonify(data)
     else:
-        content = request.get_json()
+        content = request.get_json(force=True)
         action = content['action']
         state = sensor_read(garage_door_sensor_pin)
         if (action == 'open'):
