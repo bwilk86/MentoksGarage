@@ -11,8 +11,8 @@ function GarageDoor(act){
         $('#garageDoorOpen').removeClass('disabled');
         $('#garageDoorOpen').removeAttr('disabled');
         }
-    var apiUrl="http://10.199.248.169:8090/api/door/";
-    var data={action: act};
+    var apiUrl="http://10.199.248.169:8090/api/garagedoor/";
+    var data={perform-process: act, action: "post"};
     var request = $.ajax({
     url: apiUrl,
     type: 'POST',
@@ -36,7 +36,7 @@ function GarageLights(act){
         $('#garageLightsOn').removeAttr('disabled');
         }
     var apiUrl="http://10.199.248.169:8090/api/lights/";
-    var data={action: act};
+    var data={perform-process: act, action: "post"};
     $.ajax({
     url: apiUrl,
     type: 'POST',
