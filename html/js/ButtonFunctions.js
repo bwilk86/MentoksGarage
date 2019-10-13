@@ -13,15 +13,16 @@ function GarageDoor(act){
         }
     var apiUrl="http://10.199.248.169:8090/api/door/";
     var data={action: act};
-    $.ajax({
+    var request = $.ajax({
     url: apiUrl,
     type: 'POST',
     dataType: 'json',
-    data: data,
-    success: function(response){
-    alert(response.status);},
-    error: function(response){alert(response.status);}
+    data: data
+    //success: function(response){
+    //alert(response.status);},
+    //error: function(response){alert(response.status + ' ' + response.textStatus);}
     });
+    request.done(function(response){alert(response.status);});
 }
 function GarageLights(act){
     if(act == "on"){

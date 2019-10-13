@@ -4,6 +4,7 @@ import os
 import markdown
 from flask import Flask, jsonify, request, g
 from picamera import PiCamera
+from flask_cors import CORS, cross_origin
 #from flask_restful import Resource, Api
 
 
@@ -26,12 +27,14 @@ GPIO.setup(garage_lights_relay_pin,GPIO.OUT)
 GPIO.setup(garage_unused_relay_pin,GPIO.OUT)
 
 @app.route('/')
+@cross_origin()
 def index():
     with open(os.path.dirname(app.root_path) + '/venv/ReadMe.txt', 'r') as markdown_file:
         content = markdown_file.read()
         return markdown.markdown(content)
 
 @app.route('/api/door/', methods=['PUT', 'POST', 'GET'])
+@cross_origin()
 def door_task():
     if(request.method == 'GET'):
         state = sensor_read(garage_door_sensor_pin)
@@ -59,6 +62,7 @@ def door_task():
             return jsonify(data), 200
 
 @app.route('/api/garagecamera/', methods=['GET'])
+@cross_origin()
 def camera_task():
     camera = PiCamera()
     camera.start_preview()
@@ -70,6 +74,7 @@ def camera_task():
     return jsonify(data)
 
 @app.route('/api/lights/', methods=['PUT', 'POST', 'GET'])
+@cross_origin()
 def light_task():
     if(request.method == 'GET'):
         state = GPIO.input(garage_lights_relay_pin)
