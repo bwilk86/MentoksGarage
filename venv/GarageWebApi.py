@@ -33,6 +33,31 @@ def index():
     with open(os.path.dirname(app.root_path) + '/venv/ReadMe.txt', 'r') as markdown_file:
         content = markdown_file.read()
         return markdown.markdown(content)
+class GarageDoor(Resource):
+    def get(self):
+        state = sensor_read(garage_door_sensor_pin)
+        if (state):
+            data = {'state': 'open'}
+            return jsonify(data), 200
+        else:
+            data = {'state': 'closed'}
+            return jsonify(data), 200
+    def post(self):
+        action = request.form.get('action')
+        state = sensor_read(garage_door_sensor_pin)
+        if (action == 'open'):
+            if (state):
+                relay_momentary_button(garage_door_relay_pin)
+        elif (action == 'close'):
+            state = sensor_read(garage_door_sensor_pin)
+            if (not state):
+                relay_momentary_button(garage_door_relay_pin)
+        if (state):
+            data = {'state': 'open'}
+            return jsonify(data), 200
+        else:
+            data = {'state': 'closed'}
+            return jsonify(data), 200
 
 @app.route('/api/door/', methods=['PUT', 'POST', 'GET'])
 @cross_origin()
@@ -111,5 +136,5 @@ def relay_momentary_button(pin):
     time.sleep(.2)
     GPIO.output(pin, True)
 
-#api.add_resource(GarageDoor, '/api/GarageDoor')
+api.add_resource(GarageDoor, '/api/GarageDoor')
 app.run(host='0.0.0.0', port=8090, debug=False)

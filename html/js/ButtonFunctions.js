@@ -21,7 +21,6 @@ function GarageDoor(act){
     success: function(response){alert(response.status);},
     error: function(response){alert(response.status + ' ' + response.textStatus);}
     });
-    request.done(function(response){alert(response.status);});
 }
 function GarageLights(act){
     if(act == "on"){
