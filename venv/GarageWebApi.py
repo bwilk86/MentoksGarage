@@ -8,7 +8,6 @@ import sys
 from flask_cors import CORS, cross_origin
 from flask_restful import Resource, Api
 
-print(sys.path)
 app = Flask(__name__)
 api = Api(app)
 
@@ -137,5 +136,5 @@ def relay_momentary_button(pin):
     time.sleep(.2)
     GPIO.output(pin, True)
 
-api.add_resource(GarageDoor, '/api/GarageDoor')
-app.run(host='0.0.0.0', port=8090, debug=False)
+api.add_resource(GarageDoor, '/api/garagedoor')
+app.run(host='0.0.0.0', port=8090, debug=True)
