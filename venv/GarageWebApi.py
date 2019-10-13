@@ -5,8 +5,8 @@ import markdown
 from flask import Flask, jsonify, request, g
 from picamera import PiCamera
 import sys
-#from flask_cors import CORS, cross_origin
-#from flask_restful import Resource, Api
+from flask_cors import CORS, cross_origin
+from flask_restful import Resource, Api
 
 print(sys.path)
 app = Flask(__name__)
