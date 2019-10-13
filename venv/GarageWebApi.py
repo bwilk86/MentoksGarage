@@ -10,7 +10,7 @@ from flask_restful import Resource, Api
 
 print(sys.path)
 app = Flask(__name__)
-#api = Api(app)
+api = Api(app)
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
