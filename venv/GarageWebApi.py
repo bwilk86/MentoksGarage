@@ -106,4 +106,4 @@ def relay_momentary_button(pin):
     GPIO.output(pin, True)
 
 #api.add_resource(GarageDoor, '/api/GarageDoor')
-app.run(host='0.0.0.0', port=8090, debug=True)
+app.run(host='0.0.0.0', port=8090, debug=False)

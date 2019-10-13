@@ -18,9 +18,9 @@ function GarageDoor(act){
     type: 'POST',
     dataType: 'json',
     data: data,
-    success: function(d){
-    alert("This worked");},
-    error: function(){alert("This didn't work");}
+    success: function(response){
+    alert(response.status);},
+    error: function(response){alert(response.status);}
     });
 }
 function GarageLights(act){
