@@ -33,6 +33,7 @@ def index():
         content = markdown_file.read()
         return markdown.markdown(content)
 
+@api.resource('/api/garagedoor/')
 class GarageDoor(Resource):
     def get(self):
         state = sensor_read(garage_door_sensor_pin)
@@ -137,5 +138,4 @@ def relay_momentary_button(pin):
     time.sleep(.2)
     GPIO.output(pin, True)
 
-api.add_resource(GarageDoor, '/api/garagedoor')
 app.run(host='0.0.0.0', port=8090, debug=True)
