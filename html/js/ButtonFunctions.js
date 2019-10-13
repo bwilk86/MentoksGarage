@@ -17,9 +17,8 @@ function GarageDoor(act){
     url: apiUrl,
     type: 'POST',
     dataType: 'json',
-    data: data
-    success: function(response){
-    alert(response.status);},
+    data: data,
+    success: function(response){alert(response.status);},
     error: function(response){alert(response.status + ' ' + response.textStatus);}
     });
     request.done(function(response){alert(response.status);});
@@ -44,7 +43,7 @@ function GarageLights(act){
     type: 'POST',
     dataType: 'json',
     data: data,
-    success: function(d){alert(response.status);},
-    error: function(){alert(response.status);}
+    success: function(response){alert(response.status);},
+    error: function(response){alert(response.status);}
     });
 }
