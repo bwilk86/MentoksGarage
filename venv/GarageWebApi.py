@@ -39,10 +39,10 @@ class GarageDoor(Resource):
         state = sensor_read(garage_door_sensor_pin)
         if (state):
             data = {'state': 'open'}
-            return jsonify(data), 200
+            return jsonify(data)
         else:
             data = {'state': 'closed'}
-            return jsonify(data), 200
+            return jsonify(data)
 
     def post(self):
         action = request.form.get('action')
@@ -56,10 +56,10 @@ class GarageDoor(Resource):
                 relay_momentary_button(garage_door_relay_pin)
         if (state):
             data = {'state': 'open'}
-            return jsonify(data), 200
+            return jsonify(data)
         else:
             data = {'state': 'closed'}
-            return jsonify(data), 200
+            return jsonify(data)
 
 @app.route('/api/door/', methods=['PUT', 'POST', 'GET'])
 @cross_origin()
