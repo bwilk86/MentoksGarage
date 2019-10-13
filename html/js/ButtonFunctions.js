@@ -16,7 +16,6 @@ function GarageDoor(act){
     $.ajax({
     url: apiUrl,
     type: 'POST',
-    contentType: "application/json",
     dataType: 'json',
     data: data,
     success: function(d){

@@ -37,10 +37,10 @@ def door_task():
         state = sensor_read(garage_door_sensor_pin)
         if (state):
             data = {'state':'open'}
-            return jsonify(data)
+            return jsonify(data), 200
         else:
             data={'state':'closed'}
-            return jsonify(data)
+            return jsonify(data), 200
     else:
         action = request.form.get('action')
         state = sensor_read(garage_door_sensor_pin)
@@ -53,10 +53,10 @@ def door_task():
                 relay_momentary_button(garage_door_relay_pin)
         if (state):
             data = {'state': 'open'}
-            return jsonify(data)
+            return jsonify(data), 200
         else:
             data = {'state': 'closed'}
-            return jsonify(data)
+            return jsonify(data), 200
 
 @app.route('/api/garagecamera/', methods=['GET'])
 def camera_task():
@@ -75,18 +75,18 @@ def light_task():
         state = GPIO.input(garage_lights_relay_pin)
         if(state):
             data = {'state':'ON'}
-            return jsonify(data)
+            return jsonify(data), 200
         else:
             data = {'state': 'OFF'}
-            return jsonify(data)
+            return jsonify(data), 200
     else:
         state = relay_state_change(garage_lights_relay_pin)
         if(state):
             data = {'state': 'ON'}
-            return jsonify(data)
+            return jsonify(data), 200
         else:
             data = {'state': 'OFF'}
-            return jsonify(data)
+            return jsonify(data), 200
 
 def sensor_read(pin):
     GPIO.output(pin, True)
