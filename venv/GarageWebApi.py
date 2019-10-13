@@ -45,7 +45,7 @@ class GarageDoor(Resource):
             return jsonify(data)
 
     def post(self):
-        action = request.form.get('action')
+        action = request.form.get('perform-process')
         state = sensor_read(garage_door_sensor_pin)
         if (action == 'open'):
             if (state):
@@ -73,7 +73,7 @@ def door_task():
             data={'state':'closed'}
             return jsonify(data), 200
     else:
-        action = request.form.get('action')
+        action = request.form.get('perform-process')
         state = sensor_read(garage_door_sensor_pin)
         if (action == 'open'):
             if (state):
