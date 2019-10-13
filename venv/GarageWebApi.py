@@ -33,6 +33,7 @@ def index():
     with open(os.path.dirname(app.root_path) + '/venv/ReadMe.txt', 'r') as markdown_file:
         content = markdown_file.read()
         return markdown.markdown(content)
+
 class GarageDoor(Resource):
     def get(self):
         state = sensor_read(garage_door_sensor_pin)
