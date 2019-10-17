@@ -18,13 +18,14 @@ garage_door_relay_pin = 13
 garage_unused_relay_pin = 16
 garage_door_sensor_pin = 25
 garage_lights_relay_pin = 19
-#garage_red_button_pin = 26
-#garage_white_button_pin = 21
+# garage_red_button_pin = 26
+# garage_white_button_pin = 21
 
 GPIO.setup(garage_door_relay_pin,GPIO.OUT)
 GPIO.setup(garage_door_sensor_pin,GPIO.OUT)
 GPIO.setup(garage_lights_relay_pin,GPIO.OUT)
 GPIO.setup(garage_unused_relay_pin,GPIO.OUT)
+
 
 @app.route('/')
 @cross_origin()
@@ -33,11 +34,12 @@ def index():
         content = markdown_file.read()
         return markdown.markdown(content)
 
+
 @api.resource('/api/garagedoor/')
 class GarageDoor(Resource):
     def get(self):
         state = sensor_read(garage_door_sensor_pin)
-        if (state):
+        if state:
             data = {'state': 'open'}
             return jsonify(data)
         else:
@@ -47,47 +49,49 @@ class GarageDoor(Resource):
     def post(self):
         action = request.form.get('performprocess')
         state = sensor_read(garage_door_sensor_pin)
-        if (action == 'open'):
-            if (state):
+        if action == 'open':
+            if state:
                 relay_momentary_button(garage_door_relay_pin)
-        elif (action == 'close'):
+        elif action == 'close':
             state = sensor_read(garage_door_sensor_pin)
-            if (not state):
+            if not state:
                 relay_momentary_button(garage_door_relay_pin)
-        if (state):
+        if state:
             data = {'state': 'open'}
             return jsonify(data)
         else:
             data = {'state': 'closed'}
             return jsonify(data)
 
+
 @app.route('/api/door/', methods=['PUT', 'POST', 'GET'])
 @cross_origin()
 def door_task():
-    if(request.method == 'GET'):
+    if request.method == 'GET':
         state = sensor_read(garage_door_sensor_pin)
-        if (state):
-            data = {'state':'open'}
-            return jsonify(data), 200
-        else:
-            data={'state':'closed'}
-            return jsonify(data), 200
-    else:
-        action = request.form.get('performprocess')
-        state = sensor_read(garage_door_sensor_pin)
-        if (action == 'open'):
-            if (state):
-                relay_momentary_button(garage_door_relay_pin)
-        elif (action == 'close'):
-            state = sensor_read(garage_door_sensor_pin)
-            if (not state):
-                relay_momentary_button(garage_door_relay_pin)
-        if (state):
+        if state:
             data = {'state': 'open'}
             return jsonify(data), 200
         else:
             data = {'state': 'closed'}
             return jsonify(data), 200
+    else:
+        action = request.form.get('performprocess')
+        state = sensor_read(garage_door_sensor_pin)
+        if action == 'open':
+            if state:
+                relay_momentary_button(garage_door_relay_pin)
+        elif action == 'close':
+            state = sensor_read(garage_door_sensor_pin)
+            if not state:
+                relay_momentary_button(garage_door_relay_pin)
+        if state:
+            data = {'state': 'open'}
+            return jsonify(data), 200
+        else:
+            data = {'state': 'closed'}
+            return jsonify(data), 200
+
 
 @app.route('/api/garagecamera/', methods=['GET'])
 @cross_origin()
@@ -101,12 +105,13 @@ def camera_task():
     data = {'path': full_path}
     return jsonify(data)
 
+
 @app.route('/api/lights/', methods=['PUT', 'POST', 'GET'])
 @cross_origin()
 def light_task():
-    if(request.method == 'GET'):
+    if request.method == 'GET':
         state = GPIO.input(garage_lights_relay_pin)
-        if(state):
+        if state:
             data = {'state':'ON'}
             return jsonify(data), 200
         else:
@@ -114,12 +119,13 @@ def light_task():
             return jsonify(data), 200
     else:
         state = relay_state_change(garage_lights_relay_pin)
-        if(state):
+        if state:
             data = {'state': 'ON'}
             return jsonify(data), 200
         else:
             data = {'state': 'OFF'}
             return jsonify(data), 200
+
 
 def sensor_read(pin):
     GPIO.output(pin, True)
@@ -127,15 +133,17 @@ def sensor_read(pin):
     GPIO.output(pin, False)
     return state
 
+
 def relay_state_change(pin):
     state = GPIO.input(pin)
     GPIO.output(pin, not state)
     return GPIO.input(pin)
 
+
 def relay_momentary_button(pin):
-    state = GPIO.input(pin)
-    GPIO.output(pin,False)
+    GPIO.output(pin, False)
     time.sleep(.2)
     GPIO.output(pin, True)
+
 
 app.run(host='0.0.0.0', port=8090, debug=True)
