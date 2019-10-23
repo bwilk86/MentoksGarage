@@ -12,15 +12,8 @@ function GarageDoor(act){
         $('#garageDoorOpen').removeAttr('disabled');
         }
     var apiUrl="http://10.199.248.169:8090/api/garagedoor/";
-    var data={performprocess: act, action: "post"};
-    var request = $.ajax({
-    url: apiUrl,
-    type: 'POST',
-    dataType: 'json',
-    data: data,
-    success: function(response){alert(response.status);},
-    error: function(response){alert(response.status + ' ' + response.textStatus);}
-    });
+    var data={performprocess: act};
+    $.post(apiUrl,data,function(response){alert(response.status)});
 }
 function GarageLights(act){
     if(act == "on"){
@@ -36,13 +29,6 @@ function GarageLights(act){
         $('#garageLightsOn').removeAttr('disabled');
         }
     var apiUrl="http://10.199.248.169:8090/api/lights/";
-    var data={performprocess: act, action: "post"};
-    $.ajax({
-    url: apiUrl,
-    type: 'POST',
-    dataType: 'json',
-    data: data,
-    success: function(response){alert(response.status);},
-    error: function(response){alert(response.status);}
-    });
+    var data={performprocess: act};
+    $.post(apiUrl,data,function(response){alert(response.status)});
 }
