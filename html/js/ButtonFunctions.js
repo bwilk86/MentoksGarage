@@ -11,9 +11,18 @@ function GarageDoor(act){
         $('#garageDoorOpen').removeClass('disabled');
         $('#garageDoorOpen').removeAttr('disabled');
         }
-    var apiUrl="http://10.199.248.169:8090/api/garagedoor/";
-    var data={performprocess: act};
-    $.post(apiUrl,data,function(response){alert(response.status)});
+    // var apiUrl="http://10.199.248.169:8090/api/garagedoor/";
+    // var data={performprocess: act};
+    // $.post(apiUrl,data,function(response){alert(response.status)});
+	
+//	$.ajax({
+//		type: 'GET',
+//		url: 'https://localhost:44354/api/Values/1',
+//		dataType: 'json',
+//		success: function(data){
+//			alert(data.status);
+//		}
+//	});
 }
 function GarageLights(act){
     if(act == "on"){
