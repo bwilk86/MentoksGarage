@@ -15,14 +15,14 @@ function GarageDoor(act){
     // var data={performprocess: act};
     // $.post(apiUrl,data,function(response){alert(response.status)});
 	
-//	$.ajax({
-//		type: 'GET',
-//		url: 'https://localhost:44354/api/Values/1',
-//		dataType: 'json',
-//		success: function(data){
-//			alert(data.status);
-//		}
-//	});
+	$.ajax({
+		type: 'GET',
+		url: 'https://localhost:44354/api/Values/1',
+		dataType: 'json',
+		success: function(data){
+			alert(data.status);
+		}
+	});
 }
 function GarageLights(act){
     if(act == "on"){

@@ -10,6 +10,7 @@ from flask_restful import Resource, Api
 
 app = Flask(__name__)
 api = Api(app)
+CORS(app)
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
@@ -36,6 +37,7 @@ def index():
 
 
 @api.resource('/api/garagedoor/')
+@cross_origin(origin='*',headers=['access-control-allow-origin','Content-Type'])
 class GarageDoor(Resource):
     def get(self):
         state = sensor_read(garage_door_sensor_pin)
