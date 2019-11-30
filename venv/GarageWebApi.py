@@ -37,7 +37,7 @@ def index():
 
 
 @api.resource('/api/garagedoor/')
-@crossdomain(origin='*',headers=['access-control-allow-origin','Content-Type'])
+##@crossdomain(origin='*',headers=['access-control-allow-origin','Content-Type'])
 class GarageDoor(Resource):
     def get(self):
         state = sensor_read(garage_door_sensor_pin)
