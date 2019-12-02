@@ -1,0 +1,13 @@
+//Sensor object
+//Type: RPi
+{
+    id : <UniqueID>,
+    name : <Some name>,
+    type : {
+        controller: <RPi|Other|...>,
+        sub_type: 'sensor'
+    },
+    input_pin: <GPIO int>,
+    output_pin: <GPIO int>,
+
+}

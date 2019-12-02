@@ -24,17 +24,18 @@ garage_lights_relay_pin = 19
 # garage_red_button_pin = 26
 # garage_white_button_pin = 21
 
-GPIO.setup(garage_door_relay_pin,GPIO.OUT)
-GPIO.setup(garage_door_sensor_pin,GPIO.OUT)
-GPIO.setup(garage_lights_relay_pin,GPIO.OUT)
-GPIO.setup(garage_unused_relay_pin,GPIO.OUT)
+GPIO.setup(garage_door_relay_pin, GPIO.OUT)
+GPIO.setup(garage_door_sensor_pin, GPIO.OUT)
+GPIO.setup(garage_lights_relay_pin, GPIO.OUT)
+GPIO.setup(garage_unused_relay_pin, GPIO.OUT)
 
 
-def get_db(writeBack):
+def get_db(write_back):
     db = getattr(g, '_database', None)
     if db is None:
-        db.g._database = shelve.open("devices.db", writeBack)
+        db.g._database = shelve.open("devices.db", write_back)
     return db
+
 
 @app.route('/')
 @cross_origin()
@@ -43,76 +44,92 @@ def index():
         content = markdown_file.read()
         return markdown.markdown(content)
 
-#router for performing a device's operation
-#pass the device ID and the operation you would like to perform
+
+# router for performing a device's operation
+# pass the device ID and the operation you would like to perform
 @api.resource('/api/operation/')
 class Operation(Resource):
     def put(self):
-        #parse the request and create argument list
+        # parse the request and create argument list
         parser = reqparse.RequestParser()
         parser.add_argument('identifier', required=True)
         parser.add_argument('operation', required=True)
         args = parser.parse_args()
 
-        requested_operation = args['operation']
-        available_operations = device['operations']
-
-        #get the DB with no writeback (only reading the DB)
+        # get the DB with no writeback (only reading the DB)
         shelf = get_db(False)
 
-        #get the device from the DB to get it's operations/type
+        # get the device from the DB to get it's operations/type
         try:
             device = shelf[args['identifier']]
+        except KeyError:
+            return {'message': 'Device not found for Key', 'error': KeyError}
         finally:
             shelf.close()
 
-        type = device['type']
+        device_type = device['type']
+        available_operations = device['operations']
+        requested_operation = args['operation']
 
-        if type['name'] == 'RPi':
-            #DO RASPBERRY PI SPECIFIC STUFF
-            if type['subType'] == 'sensor':
-                #DO SENSOR WORK HERE
+        # Determine if this device does the requested operation, return if not.
+        can_do_operation = False
+
+        for op in available_operations:
+            if op['operation'] == requested_operation:
+                can_do_operation = True
+                break
+
+        if not can_do_operation:
+            return {
+                       'message': 'Device cannot perform the requested operation',
+                       'device_id': device['identifier'],
+                       'device_name': device['name'], 'operations': device['operations']
+                   }, 400
+
+        if device_type['controller'] == 'RPi':
+            # DO RASPBERRY PI SPECIFIC STUFF
+            if device_type['subType'] == 'sensor':
+                # Sensors should only have get operations, not puts
+                return {'message': 'Sensors cannot perform operations'}, 400
+            elif device_type['subType'] == 'toggle':
+                # DO TOGGLE SWITCH WORK HERE
                 return 200
-            elif type['subType'] == 'toggle':
-                #DO TOGGLE SWITCH WORK HERE
-                return 200
-            elif type['subType'] == 'momentary':
+            elif device_type['subType'] == 'momentary':
+                has_sensor = False
                 if device['related_sensor_id'] is not None:
                     state = get_sensor_state(device['related_sensor_id'])
+                    has_sensor = True
 
-                #Determine if this device does the requested operation
-                can_do_operation = False
-
-                for op in available_operations:
-                    if op['operation'] == requested_operation:
-                        can_do_operation = True
-                        break
-
-                if can_do_operation:
-                    if operation == 'open':
-                        if state == 'open':
-                            return {'message': device['name'] + ' is already open', 'state': state}, 200
-                        else:
-                            relay_momentary_button(device['output_pin'])
-                            time.sleep(10)
+                if requested_operation == 'open':
+                    if state is not None & state == 'open':
+                        return {'message': device['name'] + ' is already open', 'state': state}, 200
+                    else:
+                        relay_momentary_button(device['output_pin'])
+                        time.sleep(10)
+                        if has_sensor:
                             state = get_sensor_state(device['related_sensor_id'])
-                            return {'message': device['name'], 'state': state}, 200
-                    elif operation == 'close':
-                        if state == 'close':
-                            return {'message': device['name'] + ' is already closed', 'state': state}, 200
+                            return {'message': device['name'] + ' opened', 'state': state}, 200
                         else:
-                            relay_momentary_button(device['output_pin'])
-                            time.sleep(10)
+                            return {'message': device['name'] + ' opened'}, 200
+                elif requested_operation == 'close':
+                    if state is not None & state == 'close':
+                        return {'message': device['name'] + ' is already closed', 'state': state}, 200
+                    else:
+                        relay_momentary_button(device['output_pin'])
+                        time.sleep(10)
+                        if has_sensor:
                             state = get_sensor_state(device['related_sensor_id'])
-                            return {'message': device['name'], 'state': state}, 200
+                            return {'message': device['name'] + ' closed', 'state': state}, 200
+                        else:
+                            return {'message': device['name'] + ' closed'}, 200
                 return 200
 
 
 @api.resource('/api/garagedoor/')
-##@crossdomain(origin='*',headers=['access-control-allow-origin','Content-Type'])
+# @crossdomain(origin='*',headers=['access-control-allow-origin','Content-Type'])
 class GarageDoor(Resource):
     def get(self):
-        state = sensor_read(garage_door_sensor_pin)
+        state = dep_sensor_read(garage_door_sensor_pin)
         if state:
             return {'message': 'Success', 'state': 'open'}, 200
         else:
@@ -120,12 +137,12 @@ class GarageDoor(Resource):
 
     def post(self):
         action = request.form.get('performprocess')
-        state = sensor_read(garage_door_sensor_pin)
+        state = dep_sensor_read(garage_door_sensor_pin)
         if action == 'open':
             if state:
                 relay_momentary_button(garage_door_relay_pin)
         elif action == 'close':
-            state = sensor_read(garage_door_sensor_pin)
+            state = dep_sensor_read(garage_door_sensor_pin)
             if not state:
                 relay_momentary_button(garage_door_relay_pin)
         if state:
@@ -138,19 +155,19 @@ class GarageDoor(Resource):
 @cross_origin()
 def door_task():
     if request.method == 'GET':
-        state = sensor_read(garage_door_sensor_pin)
+        state = dep_sensor_read(garage_door_sensor_pin)
         if state:
             return {'message': 'Success', 'state': 'open'}, 200
         else:
             return {'message': 'Success', 'state': 'closed'}, 200
     else:
         action = request.form.get('performprocess')
-        state = sensor_read(garage_door_sensor_pin)
+        state = dep_sensor_read(garage_door_sensor_pin)
         if action == 'open':
             if state:
                 relay_momentary_button(garage_door_relay_pin)
         elif action == 'close':
-            state = sensor_read(garage_door_sensor_pin)
+            state = dep_sensor_read(garage_door_sensor_pin)
             if not state:
                 relay_momentary_button(garage_door_relay_pin)
         if state:
@@ -188,7 +205,35 @@ def light_task():
             return {'message': 'Success', 'state': 'OFF'}, 200
 
 
-def sensor_read(pin):
+def get_sensor_state(sensor_id):
+    # get the DB with no writeback (only reading the DB)
+    shelf = get_db(False)
+
+    # get the sensor from the DB to get it's type to determine how to interact
+    try:
+        sensor = shelf[sensor_id]
+    except KeyError:
+        return {'message': 'Sensor not found for ID: ' + sensor_id, 'error': KeyError}
+    finally:
+        shelf.close()
+    # read from a sensor
+
+    sensor_type = sensor['type']
+    if sensor_type['controller'] == 'RPi':
+        state = sensor_read(sensor['input_pin'], sensor['output_pin'])
+        return state
+    else:
+        return None
+
+
+def sensor_read(in_pin, out_pin):
+    GPIO.output(out_pin, True)
+    state = GPIO.input(in_pin)
+    GPIO.output(out_pin, False)
+    return state
+
+
+def dep_sensor_read(pin):
     GPIO.output(pin, True)
     state = GPIO.input(pin)
     GPIO.output(pin, False)
