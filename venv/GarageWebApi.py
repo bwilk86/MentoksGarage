@@ -1,3 +1,4 @@
+# TODO: Move to RaspberryPiDevices.py
 import RPi.GPIO as GPIO
 import time as time
 import os
@@ -13,10 +14,11 @@ from flask_restful import Resource, Api
 app = Flask(__name__)
 api = Api(app)
 CORS(app)
-
+# TODO: Move to RaspberryPiDevices.py
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 
+# TODO: Move to RaspberryPiDevices.py
 garage_door_relay_pin = 13
 garage_unused_relay_pin = 16
 garage_door_sensor_pin = 25
@@ -24,6 +26,7 @@ garage_lights_relay_pin = 19
 # garage_red_button_pin = 26
 # garage_white_button_pin = 21
 
+# TODO: Move to RaspberryPiDevices.py
 GPIO.setup(garage_door_relay_pin, GPIO.OUT)
 GPIO.setup(garage_door_sensor_pin, GPIO.OUT)
 GPIO.setup(garage_lights_relay_pin, GPIO.OUT)
