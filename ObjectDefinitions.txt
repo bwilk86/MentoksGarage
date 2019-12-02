@@ -8,6 +8,5 @@
         sub_type: 'sensor'
     },
     input_pin: <GPIO int>,
-    output_pin: <GPIO int>,
-
+    output_pin: <GPIO int>
 }

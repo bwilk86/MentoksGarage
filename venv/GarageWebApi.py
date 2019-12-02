@@ -90,7 +90,7 @@ class Operation(Resource):
             # DO RASPBERRY PI SPECIFIC STUFF
             if device_type['subType'] == 'sensor':
                 # Sensors should only have get operations, not puts
-                return {'message': 'Sensors cannot perform operations'}, 400
+                return {'message': 'Sensors cannot perform operations, the proper use is GET'}, 400
             elif device_type['subType'] == 'toggle':
                 # DO TOGGLE SWITCH WORK HERE
                 return 200
