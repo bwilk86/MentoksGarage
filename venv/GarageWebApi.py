@@ -2,9 +2,11 @@ import RPi.GPIO as GPIO
 import time as time
 import os
 import markdown
+import sys
+import shelve
+
 from flask import Flask, jsonify, request, g
 from picamera import PiCamera
-import sys
 from flask_cors import CORS, cross_origin
 from flask_restful import Resource, Api
 
@@ -28,12 +30,82 @@ GPIO.setup(garage_lights_relay_pin,GPIO.OUT)
 GPIO.setup(garage_unused_relay_pin,GPIO.OUT)
 
 
+def get_db(writeBack):
+    db = getattr(g, '_database', None)
+    if db is None:
+        db.g._database = shelve.open("devices.db", writeBack)
+    return db
+
 @app.route('/')
 @cross_origin()
 def index():
     with open(os.path.dirname(app.root_path) + '/venv/ReadMe.txt', 'r') as markdown_file:
         content = markdown_file.read()
         return markdown.markdown(content)
+
+#router for performing a device's operation
+#pass the device ID and the operation you would like to perform
+@api.resource('/api/operation/')
+class Operation(Resource):
+    def put(self):
+        #parse the request and create argument list
+        parser = reqparse.RequestParser()
+        parser.add_argument('identifier', required=True)
+        parser.add_argument('operation', required=True)
+        args = parser.parse_args()
+
+        requested_operation = args['operation']
+        available_operations = device['operations']
+
+        #get the DB with no writeback (only reading the DB)
+        shelf = get_db(False)
+
+        #get the device from the DB to get it's operations/type
+        try:
+            device = shelf[args['identifier']]
+        finally:
+            shelf.close()
+
+        type = device['type']
+
+        if type['name'] == 'RPi':
+            #DO RASPBERRY PI SPECIFIC STUFF
+            if type['subType'] == 'sensor':
+                #DO SENSOR WORK HERE
+                return 200
+            elif type['subType'] == 'toggle':
+                #DO TOGGLE SWITCH WORK HERE
+                return 200
+            elif type['subType'] == 'momentary':
+                if device['related_sensor_id'] is not None:
+                    state = get_sensor_state(device['related_sensor_id'])
+
+                #Determine if this device does the requested operation
+                can_do_operation = False
+
+                for op in available_operations:
+                    if op['operation'] == requested_operation:
+                        can_do_operation = True
+                        break
+
+                if can_do_operation:
+                    if operation == 'open':
+                        if state == 'open':
+                            return {'message': device['name'] + ' is already open', 'state': state}, 200
+                        else:
+                            relay_momentary_button(device['output_pin'])
+                            time.sleep(10)
+                            state = get_sensor_state(device['related_sensor_id'])
+                            return {'message': device['name'], 'state': state}, 200
+                    elif operation == 'close':
+                        if state == 'close':
+                            return {'message': device['name'] + ' is already closed', 'state': state}, 200
+                        else:
+                            relay_momentary_button(device['output_pin'])
+                            time.sleep(10)
+                            state = get_sensor_state(device['related_sensor_id'])
+                            return {'message': device['name'], 'state': state}, 200
+                return 200
 
 
 @api.resource('/api/garagedoor/')
