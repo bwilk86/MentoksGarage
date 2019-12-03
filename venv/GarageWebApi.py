@@ -1,10 +1,10 @@
-# TODO: Move to RaspberryPiDevices.py
 import RPi.GPIO as GPIO
 import time as time
 import os
 import markdown
 import sys
 import shelve
+import RaspberryPiDevices
 
 from flask import Flask, jsonify, request, g
 from picamera import PiCamera
@@ -14,23 +14,6 @@ from flask_restful import Resource, Api
 app = Flask(__name__)
 api = Api(app)
 CORS(app)
-# TODO: Move to RaspberryPiDevices.py
-GPIO.setmode(GPIO.BCM)
-GPIO.setwarnings(False)
-
-# TODO: Move to RaspberryPiDevices.py
-garage_door_relay_pin = 13
-garage_unused_relay_pin = 16
-garage_door_sensor_pin = 25
-garage_lights_relay_pin = 19
-# garage_red_button_pin = 26
-# garage_white_button_pin = 21
-
-# TODO: Move to RaspberryPiDevices.py
-GPIO.setup(garage_door_relay_pin, GPIO.OUT)
-GPIO.setup(garage_door_sensor_pin, GPIO.OUT)
-GPIO.setup(garage_lights_relay_pin, GPIO.OUT)
-GPIO.setup(garage_unused_relay_pin, GPIO.OUT)
 
 
 def get_db(write_back):
@@ -66,7 +49,7 @@ class Operation(Resource):
         try:
             device = shelf[args['identifier']]
         except KeyError:
-            return {'message': 'Device not found for Key', 'error': KeyError}
+            return {'message': 'Device not found for Key: ' + args['identifier'], 'error': KeyError}
         finally:
             shelf.close()
 
@@ -100,31 +83,41 @@ class Operation(Resource):
             elif device_type['subType'] == 'momentary':
                 has_sensor = False
                 if device['related_sensor_id'] is not None:
-                    state = get_sensor_state(device['related_sensor_id'])
+                    related_sensor = get_sensor(device['related_sensor_id'])
+
+                    sensor_type = sensor['type']
+                    if sensor_type['controller'] == 'RPi':
+                        state_actual = RaspberryPiDevices.get_sensor_state(related_sensor)
+                    else:
+                        state_actual = None
                     has_sensor = True
 
-                if requested_operation == 'open':
-                    if state is not None & state == 'open':
-                        return {'message': device['name'] + ' is already open', 'state': state}, 200
+                if has_sensor & state_actual is not None & state_actual == requested_operation:
+                    return {
+                               'message': device['name'] + ' is already in the requested state',
+                               'state': state_actual,
+                               'requested_operation': requested_operation
+                           }, 200
+                elif has_sensor & state_actual is None:
+                    return {
+                        'message': device['name'] + ' has a sensor(' + related_sensor['name'] + ', ' +
+                        related_sensor['id'] + '), but it could not be read'
+                    }
+                else:
+                    RaspberryPiDevices.relay_momentary_button(device['output_pin'])
+                    time.sleep(10)
+                    if has_sensor:
+                        state_actual = RaspberryPiDevices.get_sensor_state(sensor)
+                        return {
+                                   'message': device['name'] + ' performed the requested action',
+                                   'requested_operation': requested_operation,
+                                   'state': state_actual
+                               }, 200
                     else:
-                        relay_momentary_button(device['output_pin'])
-                        time.sleep(10)
-                        if has_sensor:
-                            state = get_sensor_state(device['related_sensor_id'])
-                            return {'message': device['name'] + ' opened', 'state': state}, 200
-                        else:
-                            return {'message': device['name'] + ' opened'}, 200
-                elif requested_operation == 'close':
-                    if state is not None & state == 'close':
-                        return {'message': device['name'] + ' is already closed', 'state': state}, 200
-                    else:
-                        relay_momentary_button(device['output_pin'])
-                        time.sleep(10)
-                        if has_sensor:
-                            state = get_sensor_state(device['related_sensor_id'])
-                            return {'message': device['name'] + ' closed', 'state': state}, 200
-                        else:
-                            return {'message': device['name'] + ' closed'}, 200
+                        return {
+                                   'message': device['name'] + ' performed the requested action',
+                                   'requested_operation': requested_operation
+                               }, 200
                 return 200
 
 
@@ -208,7 +201,7 @@ def light_task():
             return {'message': 'Success', 'state': 'OFF'}, 200
 
 
-def get_sensor_state(sensor_id):
+def get_sensor(sensor_id):
     # get the DB with no writeback (only reading the DB)
     shelf = get_db(False)
 
@@ -219,40 +212,7 @@ def get_sensor_state(sensor_id):
         return {'message': 'Sensor not found for ID: ' + sensor_id, 'error': KeyError}
     finally:
         shelf.close()
-    # read from a sensor
-
-    sensor_type = sensor['type']
-    if sensor_type['controller'] == 'RPi':
-        state = sensor_read(sensor['input_pin'], sensor['output_pin'])
-        return state
-    else:
-        return None
-
-
-def sensor_read(in_pin, out_pin):
-    GPIO.output(out_pin, True)
-    state = GPIO.input(in_pin)
-    GPIO.output(out_pin, False)
-    return state
-
-
-def dep_sensor_read(pin):
-    GPIO.output(pin, True)
-    state = GPIO.input(pin)
-    GPIO.output(pin, False)
-    return state
-
-
-def relay_state_change(pin):
-    state = GPIO.input(pin)
-    GPIO.output(pin, not state)
-    return GPIO.input(pin)
-
-
-def relay_momentary_button(pin):
-    GPIO.output(pin, False)
-    time.sleep(.2)
-    GPIO.output(pin, True)
+    return sensor
 
 
 app.run(host='0.0.0.0', port=8090, debug=True)
