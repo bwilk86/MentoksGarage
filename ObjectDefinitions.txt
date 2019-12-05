@@ -10,3 +10,24 @@
     input_pin: <GPIO int>,
     output_pin: <GPIO int>
 }
+
+
+//Type: RPi
+//SubType: Momentary buttons
+{
+	"id": "GarageDoor",
+	"name": "Garage Door",
+	"type": {
+		"name": "RPi",
+		"sub_type": "momentary"
+	},
+	"operations": [
+		{
+			"operation": "open"
+		},
+		{
+			"operation": "close"
+		}
+	],
+	"related_sensor_id": "GarageDoorSensor"
+}
