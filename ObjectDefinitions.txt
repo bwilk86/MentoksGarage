@@ -1,33 +1,46 @@
-//Sensor object
 //Type: RPi
+//SubType: Sensor object
 {
-    id : <UniqueID>,
-    name : <Some name>,
-    type : {
-        controller: <RPi|Other|...>,
-        sub_type: 'sensor'
+    'id': <UniqueID>,
+    'name': <Some name>,
+    'type': {
+        'controller': 'RPi',
+        'sub_type': 'sensor'
     },
-    input_pin: <GPIO int>,
-    output_pin: <GPIO int>
+    'input_pin': <GPIO int>,
+    'output_pin': <GPIO int>
 }
 
 
 //Type: RPi
 //SubType: Momentary buttons
 {
-	"id": "GarageDoor",
-	"name": "Garage Door",
-	"type": {
-		"name": "RPi",
-		"sub_type": "momentary"
+	'id': 'GarageDoor',
+	'name': 'Garage Door',
+	'type': {
+		'name': 'RPi',
+		'sub_type': 'momentary'
 	},
-	"operations": [
+	'operations': [
 		{
-			"operation": "open"
+			'operation': 'open'
 		},
 		{
-			"operation": "close"
+			'operation': 'close'
 		}
 	],
-	"related_sensor_id": "GarageDoorSensor"
+	'output_pin': <GPIO int>,
+	'related_sensor_id': 'GarageDoorSensor'
+}
+
+//Type: RPi
+//SubType: Toggle
+{
+    'id': 'GarageLights',
+    'name': 'Garage Lights',
+    'type': {
+        'name': 'RPi',
+        'sub_type': 'toggle'
+    },
+    'related_sensor_id': 'GarageLightsSensor'
 }
