@@ -44,3 +44,14 @@
     },
     'related_sensor_id': 'GarageLightsSensor'
 }
+
+//RPi Response Definitions
+perform_operation Success
+{
+    'message': <Some message>,
+    'device_id': <DeviceID>,
+    'device_name': <DeviceName>,
+    'operation_performed': <Open/Close|On,Off...>
+    'success': <True|False>,
+    'state': <Open/Closed|On/Off...>
+}

@@ -22,6 +22,35 @@ GPIO.setup(garage_unused_relay_pin, GPIO.OUT)
 
 
 class RaspberryPiDevice:
+    def perform_operation(self, device, operation):
+        # get device_type
+        device_type = device['type']
+
+        if device_type['subType'] == 'sensor':
+            # Sensors should only have get operations, not puts
+            return {
+                'message': 'Sensors cannot perform operations, the proper use is GET',
+                'device_id': device['id'],
+                'device_name': device['name'],
+                'requested_operation': operation,
+                'success': False
+            }
+        elif device_type['subType'] == 'toggle':
+            # DO TOGGLE SWITCH WORK HERE
+            return 200
+        # TODO: remove all sensor logic, move to api layer (to do routing complexity where controller types don't match)
+        elif device_type['subType'] == 'momentary':
+            relay_momentary_button(device['output_pin'])
+            time.sleep(10)
+            return {
+                'message': device['name'] + ' performed the requested action',
+                'device_id': device['id'],
+                'device_name': device['name'],
+                'requested_operation': requested_operation,
+                'state': state_actual,
+                'success': True
+            }
+
     def get_sensor_state(self, sensor):
         # read from a sensor
         state = sensor_read(sensor['input_pin'], sensor['output_pin'])
