@@ -3,12 +3,41 @@
 {
     'id': <UniqueID>,
     'name': <Some name>,
-    'type': {
-        'controller': 'RPi',
-        'sub_type': 'sensor'
-    },
-    'input_pin': <GPIO int>,
-    'output_pin': <GPIO int>
+    'controller': 'RPi',
+    'type': 'sensor',
+    'communication': {
+        'type': <GPIO,SSL,HTTP,I2C,Serial>,
+        //where to request data
+        'input': [
+            {
+                'address':<I2C/HTTP>,
+                'pin': <int for board pin>,
+                'port': <http/ssl port num>
+            },
+            {
+                'address':<I2C/HTTP>,
+                'pin': <int for board pin>,
+                'port': <http/ssl port num>
+            }],
+        //where to receive data
+        'output': [
+            {
+                'address':<I2C/HTTP>,
+                'pin': <int for board pin>,
+                'port': <http/ssl port num>
+            },
+            {
+                'address':<I2C/HTTP>,
+                'pin': <int for board pin>,
+                'port': <http/ssl port num>
+            }]
+    }
+}
+
+//RPi Sensor Response
+//get_sensor_state
+{
+    'state': <1|0>
 }
 
 
@@ -42,11 +71,12 @@
         'name': 'RPi',
         'sub_type': 'toggle'
     },
+    'output_pin': <GPIO int>,
     'related_sensor_id': 'GarageLightsSensor'
 }
 
 //RPi Response Definitions
-perform_operation Success
+//perform_operation Success
 {
     'message': <Some message>,
     'device_id': <DeviceID>,
@@ -55,3 +85,4 @@ perform_operation Success
     'success': <True|False>,
     'state': <Open/Closed|On/Off...>
 }
+

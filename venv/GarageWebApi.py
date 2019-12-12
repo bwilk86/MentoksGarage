@@ -53,7 +53,6 @@ class Operation(Resource):
         finally:
             shelf.close()
 
-        device_type = device['type']
         available_operations = device['operations']
         requested_operation = args['operation']
 
@@ -73,17 +72,14 @@ class Operation(Resource):
                    }, 400
 
         # TODO: Implement Sensor logic
-        has_sensor = False
         if device['related_sensor_id'] is not None:
             related_sensor = get_sensor_from_db(device['related_sensor_id'])
 
-            sensor_type = sensor['type']
-            if sensor_type['controller'] == 'RPi':
-                state_actual = RaspberryPiDevices.get_sensor_state(related_sensor)
+            state_actual = get_sensor_state(related_sensor)
+            if state_actual is not None:
                 has_sensor = True
-            else:
-                state_actual = None
-                has_sensor = False
+        else:
+            has_sensor = False
 
         if has_sensor & state_actual is not None & state_actual == requested_operation:
             return {
@@ -93,35 +89,54 @@ class Operation(Resource):
                 'state': state_actual,
                 'requested_operation': requested_operation,
                 'success': True
-            }
+            }, 200
         elif has_sensor & state_actual is None:
             return {
                 'message': device['name'] + ' has a sensor(' + related_sensor['name'] + ', ' + related_sensor['id']
-                + '), but it could not be read. Probably has not been implemented',
+                + '), but it could not be read. The Sensor type has most likely not been implemented',
                 'device_id': device['id'],
                 'device_name': device['name'],
                 'state': None,
                 'requested_operation': requested_operation,
                 'success': False
-            }
+            }, 200
 
-        if device_type['controller'] == 'RPi':
+        if device['controller'] == 'RPi':
             response = RaspberryPiDevices.perform_operation(device, requested_operation)
-            if response['success']:
-                # TODO: Check state
-                return {
-                    'message': response['message'],
-                    'device_id': response['device_identifier'],
-                    'device_name': response['device_name'],
-                    'requested_operation': response['requested_operation']
-                    }, 200
+            if has_sensor:
+                state_actual = get_sensor_state(related_sensor)
+
+                if response['success']:
+                    return {
+                        'message': response['message'],
+                        'device_id': response['device_identifier'],
+                        'device_name': response['device_name'],
+                        'requested_operation': response['requested_operation'],
+                        'state': state_actual
+                        }, 200
+                else:
+                    return {
+                        'message': response['message'],
+                        'device_id': response['device_identifier'],
+                        'device_name': response['device_name'],
+                        'requested_operation': response['requested_operation'],
+                        'state': state_actual
+                        }, 500
             else:
-                return {
-                    'message': response['message'],
-                    'device_id': response['device_identifier'],
-                    'device_name': response['device_name'],
-                    'requested_operation': response['requested_operation'],
-                    }, 500
+                if response['success']:
+                    return {
+                        'message': response['message'],
+                        'device_id': response['device_identifier'],
+                        'device_name': response['device_name'],
+                        'requested_operation': response['requested_operation']
+                        }, 200
+                else:
+                    return {
+                        'message': response['message'],
+                        'device_id': response['device_identifier'],
+                        'device_name': response['device_name'],
+                        'requested_operation': response['requested_operation'],
+                        }, 500
         return 200
 
 
@@ -208,7 +223,6 @@ def light_task():
 def get_sensor_from_db(sensor_id):
     # get the DB with no writeback (only reading the DB)
     shelf = get_db(False)
-
     # get the sensor from the DB to get it's type to determine how to interact
     try:
         sensor = shelf[sensor_id]
@@ -217,6 +231,15 @@ def get_sensor_from_db(sensor_id):
     finally:
         shelf.close()
     return sensor
+
+
+def get_sensor_state(sensor):
+    sensor_type = sensor['type']
+    if sensor_type['controller'] == 'RPi':
+        return RaspberryPiDevices.get_sensor_state(related_sensor)
+    else:
+        return None
+
 
 
 app.run(host='0.0.0.0', port=8090, debug=True)
