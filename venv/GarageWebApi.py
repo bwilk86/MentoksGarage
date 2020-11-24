@@ -4,7 +4,7 @@ import os
 import markdown
 import sys
 import shelve
-import RaspberryPiDevices
+from modules.RaspberryPiDevices import RaspberryPiDevice as raspidev
 
 from flask import Flask, jsonify, request, g
 from picamera import PiCamera
@@ -14,6 +14,8 @@ from flask_restful import Resource, Api
 app = Flask(__name__)
 api = Api(app)
 CORS(app)
+
+#devicehelper = raspidev.RaspberryPiDevices()
 
 
 def get_db(write_back):
@@ -144,7 +146,9 @@ class Operation(Resource):
 # @crossdomain(origin='*',headers=['access-control-allow-origin','Content-Type'])
 class GarageDoor(Resource):
     def get(self):
-        state = dep_sensor_read(garage_door_sensor_pin)
+        
+        garage_door_sensor_pin=25
+        state = raspidev.dep_sensor_read(self,garage_door_sensor_pin)
         if state:
             return {'message': 'Success', 'state': 'open'}, 200
         else:
@@ -152,7 +156,7 @@ class GarageDoor(Resource):
 
     def post(self):
         action = request.form.get('performprocess')
-        state = dep_sensor_read(garage_door_sensor_pin)
+        state = raspidev.dep_sensor_read(garage_door_sensor_pin)
         if action == 'open':
             if state:
                 relay_momentary_button(garage_door_relay_pin)

@@ -37,7 +37,7 @@ function GarageLights(act){
         $('#garageLightsOn').removeClass('disabled');
         $('#garageLightsOn').removeAttr('disabled');
         }
-    var apiUrl="http://10.199.248.169:8090/api/lights/";
+    var apiUrl="http://10.199.248.170:8090/api/lights/";
     var data={performprocess: act};
     $.post(apiUrl,data,function(response){alert(response.status)});
 }
